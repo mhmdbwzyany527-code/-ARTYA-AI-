@@ -10,41 +10,35 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/api/chat", async (req, res) => {
-  const userMessage = (req.body.message || "").toString().slice(0, 2000);
+    const userMessage = (req.body.message || "").toString();
 
-  try {
-    const { data } = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        // لو موديلك مو متاح، تقدر تغيّر إلى "gpt-3.5-turbo" أو أي موديل متاح في حسابك
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: "أنت ARTYA AI مساعد ذكي ولبق يجيب بالعربية باحتراف." },
-          { role: "user", content: userMessage }
-        ],
-        temperature: 0.7
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        timeout: 30000
-      }
-    );
+    try {
+        const { data } = await axios.post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: "أنت ARTYA AI مساعد ذكي 🎨" },
+                    { role: "user", content: userMessage }
+                ],
+                temperature: 0.7
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                timeout: 30000
+            }
+        );
 
-    const reply = data?.choices?.[0]?.message?.content || "لم يصل رد من OpenAI.";
-    res.json({ reply });
-  } catch (err) {
-    const msg = err?.response?.data?.error?.message || err.message;
-    res.status(500).json({
-      reply: `تعذر الاتصال بالخادم. تأكد من المفتاح والموديل في Render. التفاصيل: ${msg}`
-    });
-  }
+        const reply = data?.choices?.[0]?.message?.content || "❌ لا يوجد رد";
+        res.json({ reply });
+
+    } catch (err) {
+        const msg = err?.response?.data?.error?.message || err.message;
+        res.status(500).json({ reply: "⚠️ خطأ: " + msg });
+    }
 });
 
-app.get("/health", (_req, res) => res.send("OK"));
-
-app.listen(PORT, () => {
-  console.log(`✅ ARTYA AI running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 السيرفر شغال على http://localhost:${PORT}`));
